@@ -1,0 +1,487 @@
+
+##############################################################
+# Orientational Order of Anisotropic Particles Using SymBOPs # 
+##############################################################
+
+
+############
+# Contents #
+############
+
+1. What is the purpose of this code?
+
+2. Requirements
+
+3. Using this code
+	a. General use
+	b. Input data file format
+	c. Input parameters
+	d. Manually input settings without using the input file "Settings.txt"	
+	e. Using input file "Settings.txt"
+	f. Brief description of each module
+
+4. Note about running the code on a PC
+
+
+**Example files "PP_data_1.39.txt" and "Settings.txt" are included.
+
+
+
+
+
+
+
+========================================
+- 1. What is the purpose of this code? -
+========================================
+
+See these papers for more information:
+-
+-
+
+To look for domains with orientational order inside of a sample made with anisotropic particles.
+The code uses the Polyhedral Nematic Order Parameter (PNOP) to find orientational order between 
+neighboring anisotropic particles and Symmetrized Bond-Order Parameters (SymBOPs) to look for 
+bond-orientational order in the neighborhood of each particle. SymBOPs are a modified version 
+of the traditional bond-order parameters (BOPs) that imbue the BOP with the symmetry of the 
+ideal anisotropic particle. SymBOPs are applied to each bond, rather than each particle 
+(as traditional BOPs). In general both order parameters are l-th rank tensors, but in 3D there 
+is a convenient 1-to-1 mapping between symmetric, traceless tensors of rank l to 
+spherical harmonics of degree l. This code takes advantage of the spherical harmonic form of the
+order parameters, forming the local order parameter scatter plot that allows the user to pick
+out clusters of bonds that have the same type of order, and may form extended domains of the same
+orientational order. The bonds in a cluster are then chosen and a bond percolation is performed
+to find all domains of some minimum size with this type of orientational order.   
+
+While this code can be used for any data of anisotropic particles that includes the position of 
+the center of each particle and the positions of the vertices, often experimental data will only
+include the center positions of the particles or nanoparticles. In this case this code will not 
+work as is, and a different scheme must be used to treat these isotropic particles. We have such
+a scheme that will be released in the future. This code is ONLY for anisotropic particles. That is,
+you must have the positions of the centers of the particles AND the positions of the vertices of
+these particles around the center.
+
+
+
+
+
+
+
+===================
+= 2. Requirements =
+===================
+
+Python version:
+Python 3.6+
+
+Required Packages:
+SciPy
+NumPy
+Matplotlib
+Pathlib
+LaTeX (required for plot labels)
+
+
+*Matplotlib's LaTeX support requires: 
+A LaTeX installation
+dvipng
+Ghostscript
+
+
+
+
+
+======================
+= 3. Using this code =
+======================
+
+
+	a. General use
+		You must have a data input file in the format described in Section 3b below with the file name "PP_data_[ratio].txt". 
+		The code is only implemented to work with periodic boundary conditions (PBC).
+
+		There are two choices for running the code.
+
+		A. Prepare a "Settings.txt" file as described in Section 3e below and define the input path IN in "runSetup.py" 
+		OR
+		B. Manually define each parameter (outlined in Section 3d below) in the file "runSetup.py"
+
+		A. is best for running multiple different ratios at once, but can be used for a single ratio.
+		B. is best for running a single ratio or using a custom box in the local order parameter scatter plot,
+			described below.
+
+		For choice A. see Section 3e
+		For choice B. see Section 3d
+
+
+		If there is an input file "Settings.txt" in the IN directory, the parameters listed in "runSetup.py" will be ignored. 
+
+		**Regardless of choice, after all parameters are defined run the module "runSetup.py". 
+
+		**Before running, ALL input files (input data file "PP_data_[ratio].txt", and "Settings.txt", if applicable) must be in the directory you define 
+			as the variable IN.
+
+		Example files included: PP_data_1.39.txt, input data for ratio=1.39; Settings.txt, input file to test the input data.
+
+
+
+
+	b. Input data file format
+		This code was made to be used with the output files from LAMMPS (LAMMPS trajectory files), but
+		this is not necessary, in general. Below we describe how the input data file must be formatted
+		regardless of how it is obtained.
+
+		i. File Name.
+				The file name for the input data file MUST be "PP_data_[ratio].txt", where [ratio] is to be
+				replaced with the patchy particle (PP) to nanoparticle (NP) size ratio being used.
+		
+		ii. Line 0 and Line 1 of the data file
+				The data should start on Line 2 of "PP_data_[ratio].txt". The first two lines can be anything,
+				but it's often a good idea to put the total # of particles on line 0. Line 1 can either be left
+				blank or, if using LAMMPS, the timestep being used can be put here. But Line 0 and Line 1 can
+				both be left blank.
+
+		iii. Inputting Data.
+				Starting on *Line 2*, the data for one line will be input in the order:
+				Particle ID    X	Y	Z
+		
+				Between each value there should be a tab (\t). Only tabs are used as delimiters in this file.
+
+				The Particle ID is very specific (Particle here refers to all positions that make up centers 
+				and vertices of the anisotropic particles and nanoparticles).
+
+
+				Particle ID		What it represents
+
+					1			This is the center position of the anisotropic particle.
+
+					2			This is a vertex of the center position listed directly above it (The last ID=1 listed). 
+
+					3			This is a nanoparticle (NP) in the sample. These can be left out completely if there are no NPs
+								or you do not want to include NPs. Currently there is no use for NPs in the code. But if NPs are
+								listed in the data file, they will be read in under the dict variable NP. 
+
+					>3			These particles are not included. If any position is labeled with an ID > 3 it will not be included.
+
+
+				**Example of input data file of two square particles located at positions (1, 2, 3) and (-1,-2,-3) with a PP to NP size ratio 1.39:
+				Square 1 has center positions (1, 2, 3) with vertices located at positions (1.5, 2, 3), (0.5, 2, 3), (1, 2.5, 3), (1, 1.5, 3)
+				Square 2 has center positions (-1, -2, -3) with vertices located at positions (-0.5, -2, -3), (-1.5, -2, -3), (-1, -1.5, -3), (-1, -2.5, -3)
+
+				File Name: PP_data_1.39.txt
+
+				Inside the file without NPs:
+				---------------------	
+Line 0			2
+Line 1
+Line 2			1	1	2	3
+.				2	1.5	2	3
+.				2	0.5	2	3
+.				2	1	2.5	3
+				2	1	1.5	3
+				1	-1	-2	-3
+				2	-0.5	-2	-3
+				2	-1.5	-2	-3
+				2	-1	-1.5	-3
+Last Line		2	-1	-2.5	-3
+				---------------------
+				EOF
+					
+				If you include NPs, they are listed with Particle ID 3 and the x,y,z position is listed in the same way with tabs between all values.				
+
+
+
+
+
+
+
+	c. Input parameters
+			
+		List of input parameters:
+		
+		IN (str): path to input files. All input files for a single ratio must be in the same directory (IN) 
+
+		OUT (str): path to where output files will be saved. Inside OUT directories for each ratio and 
+			type of bond will be made to hold output files.
+
+		ratio (float): The patchy particle to nanoparticle size ratio
+
+		l (list of ints): The degree of the spherical harmonic or rank of the tensor used. Ex. For cubic symmetry l=[4, 6] are good choices 
+
+		boundaries (2D list of Box bounds): Only periodic boundary conditions can be used. boundaries holds the box bounds 
+			in the x, y, and z directions.
+			**Ex. for a box in the region: x: (0,2), y: (1,3), z: (-1,1):
+				boundaries = [ [0, 2], [1, 3], [-1, 1] ]			 
+
+		rmin, rmax (floats): These are the minimum and maximum radius around a particle to look for neighbors, 
+			in the same units as the particle positions. These cutoffs are often taken from the first peak
+			of the radial distribution function.
+			**Ex. To look for particles in a spherical shell from a radius of 0.3 to a radius of 1.5
+			rmin = 0.3
+			rmax = 1.5 
+
+		particle_type (str): The type of anisotropic particle. Currently there are only two choices: "octahedron" and "square". 
+
+		bond_type (str): **Only use if not using ideal_qs and ideal_ss. The type of bond to look for between 
+			anisotropic particles. Current there are only two pre-defined choices: 
+			"FtF" and "EtE" for face-to-face and edge-to-edge bonds, respectively.
+			These are defined in terms of ideal_qs and ideal_ss just above in the ideal_qs/ideal_ss variable description.
+	
+		ideal_qs, ideal_ss (dicts): **Only use this if not using bond_type. This locates the region on the local order parameter 
+			scatter plot where bonds will be chosen. The dict keys are lists of the values of l listed above. The values of 
+			each key are the value on the plot where the center of a box will be made. All bonds in the box are used for 
+			bond percolation to find domains. ss is short for the inner product between polyhedral nematic order parameters 
+			of neighboring particles (horizontal axis), and qs is short for the SymBOP (vertical axis). This then defines a box 
+			in the qs-ss plane. These values will change with l, so the ideal_qs dictionary defines the qs value for each 
+			l-value, and likewise for ideal_ss.
+			**Example: For l=4 we want a box centered on the ss-axis at -0.46 and centered on the qs axis at -0.5, and  
+				For l=6 we want a box centered on the ss-axis at 0.4 and centered on the qs axis at 0.6. We would have 
+				ideal_ss = {4:[-0.46], 6:[0.4]}
+				ideal_qs = {4:[-0.5], 6:[0.6]}
+
+			There are some pre-defined box centers. These are accessed using bond_type instead of ideal_ss and ideal_qs.
+			bond_type = "FtF" corresponds to   
+				ideal_ss = {4:[-0.46], 6:[0.4]}
+				ideal_qs = {4:[-0.5], 6:[0.6]}
+			bond_type = "EtE" corresponds to
+				ideal_ss = {4:[1.0], 6:[1.0]}
+				ideal_qs = {4:[-0.191], 6:[-0.575]}
+
+		qs_width, ss_width (floats): These are HALF the widths of the box whose center is defined by ideal_qs and ideal_ss above. 
+			It locates the region where bonds will be chosen to be percolated to find domains. ideal_qs and ideal_ss are the
+			location of the center of the box on the local order parameter scatter plot (for a specific value of l), and 
+			qs_width and ss_width are the distance from the center of the box to each boundary in the vertical and horizontal 
+			directions, respectively. 
+			**Example: If the box is centered at (0,0) with qs_width = 0.1 and ss_width = 0.05
+				center = (0,0)
+				box edges in the (horizontal) ss-direction: (-0.05, 0.05) with a full width of 2*0.05 = 0.1
+ 				box edges in the (vertical) qs-direction: (-0.1, 0.1) with a full width of 2*0.1 = 0.2
+ 		
+
+		dom_min (int): The minimum number of particles in a domain. If a domain with fewer particles is found, it is discarded.
+			default is dom_min = 4 particles.
+
+
+
+
+
+
+
+	d. Manually input settings without using the input file "Settings.txt"	
+
+		If you choose to not use the input file "Settings.txt", then all of the parameters listed in Section 3c. above must be input in
+		the file "runSetup.py". There are spaces for each parameter listed there already. 
+
+		This option is good for running a single ratio, or if you want to use a custom region on the local order parameter scatter plot
+		for finding domains. In that case you would set bond_type=None (or comment out bond_type) and set the box in the plot using 
+		ideal_qs, ideal_ss, qs_width, and ss_width.
+
+		**Before running, ALL input files (input data file "PP_data_[ratio].txt" for each ratio) must be in the directory you define 
+			as the variable IN.
+
+		**After all parameters are defined run the module "runSetup.py". 
+
+		If there is an input file "Settings.txt" in the IN directory, the parameters listed in "runSetup.py" will be ignored. 
+
+
+
+
+
+
+
+
+	e. Using input file "Settings.txt"
+
+		If you choose to use the external input file, then the parameters will be listed in an external file that is saved in the directory
+		listed as the variable IN, described above.
+
+		The file name must be "Settings.txt", including cases.
+	
+		***All parameters are listed in "Settings.txt" EXCEPT the variable IN. IN should be defined in "runSetup.py".*** 
+
+		In the file "Settings.txt" you will list each variable and on the next line the values for that variable.
+		A complete example of a "Settings.txt" file is listed below for two ratios, 1.389 and 1.515.
+		In this case, the data files for each ratio are also in the IN directory and called "PP_data_1.389.txt" and "PP_data_1.515.txt".
+		The format of those files is described in Section 3b. above
+
+		**Before running, ALL input files ("Settings.txt") must be in the directory you define 
+			as the variable IN.
+
+		**After all parameters are defined in "Settings.txt" run the module "runSetup.py". 
+
+
+		**If there is an input file "Settings.txt" in the IN directory, the parameters listed in "runSetup.py" will be ignored. 
+
+
+
+
+
+
+		**Example with ratios 1.389 and 1.515.
+			The variable IN is listed in the file "runSetup.py"!
+				It has to know where to find the file "Settings.txt" afterall.
+
+			The variable OUT is on Line 0 with the output path directly below it on Line 1.
+
+			We want results for l-values 4 and 6
+
+			We list ideal_qs, ideal_ss for all l-values with only a comma between each with no spaces.
+				For ideal_qs and ideal_ss each l-value is followed by a colon (:) and the value with no spaces.	
+
+			The widths of the box qs_width and ss_width are both set to 0.2. This is the default--these can
+				be left out if using bond_type or if you want the values 0.2 for both.
+
+			The PBC box boundaries are [ [-0.65, 9.75], [-0.65, 9.75], [-0.65, 9.75] ].
+
+			Particle_Type is set as "square". The choices are "square" or "octahedron".
+
+			Bond_Type is set as FtF here. As discussed above, the pre-defined choices are FtF and EtE.
+				If you are defining your own ideal_qs and ideal_ss then bond_type can be made any string,
+				which will become the name of the directory where the results are saved.
+
+			dom_min is the minimum number of particles to look for in a single domain. The default is 4, if it's
+				not included in "Settings.txt". In the example below it is set to 6.
+
+			The last part is a list of all ratios followed by the rmin, rmax values to be used for that ratio:
+			We want the code to run for ratios 1.389 and 1.515.
+
+			For ratio 1.389 we want rmin = 0.65,  rmax = 0.776.
+
+			For ratio 1.515 we want rmin = 0.65, rmax = 0.745.
+
+			The list of ratios can be made longer by continuing to list the ratios and rmin, rmax for that ratio.
+
+
+			---------------------	
+Line 0		OUT
+Line 1		/User/Desktop/test/
+Line 2		l
+.			4,6
+.			ideal_qs
+.			4:-0.5,6:0.6
+			ideal_ss
+			4:-0.46,6:0.4
+			qs_width
+			0.2
+			ss_width
+			0.2
+			Box
+			-0.65	9.75
+			-0.65	9.75
+			-0.65	9.75
+			Particle_Type
+			square
+			Bond_Type
+			FtF
+			dom_min
+			6
+			RDF
+			1.389
+			0.65	0.776
+			1.515
+Last Line	0.65	0.745
+			---------------------	
+			EOF
+
+
+
+
+
+
+
+
+
+
+
+	f. Brief description of each module
+
+		Below we list all the modules with a brief description of what that module does.
+
+*		runSetup.py: This is the only module you should need to interact with. In this module you 
+			will set all parameters, if not using the input file "Settings.txt". If you are using
+			the input file "Settings.txt", then this is where you will set the input path IN where
+			all of your input files are located.
+
+			***When all parameters are defined, run "runSetup.py" to execute the code.***
+
+		setup.py: Here extra parameters are set to make sure the code works the way you hope it will.
+			In particular, the "Settings.txt" file is interpreted in this module.
+
+		Particle.py: This is a class that holds variables for each anisotropic particle, and some 
+			global variables, like input and output paths. It also has some member functions that
+			are used to manipulate the variables for each particle.
+
+		main.py: This is the hub of the package. Every action that occurs in the code is controlled
+			from main.py. It calls all functions that are necessary for calculating order parameters,
+			finding domains, and making plots.
+
+		getRatios.py: If using the input file "Settings.txt", this reads in the ratios that you intend
+			to use. These are the ratios listed in the "Settings.txt" file, described in Section 3e above.
+
+		readData.py: This does exactly as it says. It reads the data from the input data file 
+			"PP_data_[ratio].txt", and sets all positions of centers, vertices, and NPs.
+
+		getNeighbors.py: For all anisotropic particles i, it finds all neighboring aniostropic
+			particles that fall within the spherical shell defined by rmin and rmax, centered 
+			on i.
+
+		square_to_octahedron.py: In the case when particle_type is defined as "square", each particle
+			is made into an octahedron instead. This helps in comparing the results for squares with
+			those of octahedra. The module adds the two extra vertices that turn a square into an octahedron.
+
+		normalization.py: This finds the bond-order parameter (BOP) spherical harmonic vector and 
+			polyhedral nematic order parameter (PNOP) vector (in spherical harmonics) for an ideal
+			anisotropic particle of the kind defined by variable particle_type. This is used
+			to normalize the BOP and PNOP vectors for each real anisotropic particle. In the case 
+			when a simulation of ideal particles is done, the values will be 1.0 when normalized.
+
+		ql_local_PP.py: This is called by normalization.py to find the BOP and PNOP vectors.
+
+		ql_local.py: This finds the BOP vector and traditional scalar BOP for each particle.
+
+		sl_local.py: This finds the PNOP vector and scalar PNOP for each particle.
+
+		getprojqs.py: Collects the "chosen" bonds from the local order parameter scatter plot that 
+			will be used in the bond percolation to find domains.
+
+		bonds_to_parts_anisotropic.py: Performs the bond percolation using the "chosen" bonds from
+			getprojqs.py. These bonds then give particles that form domains.
+
+		ql_global_Ql_not_ideal.py: Finds the global BOP. This is called from bonds_to_parts_anisotropic.py.
+
+		writeFiles.py: Outputs some files with information about the order parameters for each value of l.
+
+		plots.py: Creates all of the plots.
+
+		distPBC.py: Finds the distance between two points, taking into account the periodic boundary conditions. 
+
+		vecPBC.py: Finds a vector between two points, taking into account the periodic boundary conditions.
+
+
+
+
+
+
+
+
+
+
+
+4. Note about running the code on a PC
+
+	We use the package Pathlib to make sure all input and output paths work on Mac/Linux/PC systems.
+
+	In order to write the input and output paths, regardless of what operating system you are using,
+	use a forward slash (/)!
+
+	For all systems an example path should look like this:
+	"/Users/Desktop/folder/".
+ 
+	Depending on your operating system Pathlib will correct the slashes itself, if necessary.
+
+
+
+
+
+
+
