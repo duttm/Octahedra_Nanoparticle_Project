@@ -5,8 +5,9 @@ units lj
 
 #dimension 2
 boundary p p p
-read_data data.octahedron_nanoparticle.init    # extra/bond/per/atom 5
-#read_data data_expanded.init extra/bond/per/atom 5
+read_data data.octahedron.init
+#read_data data.square.init
+
 neighbor 2 bin
 neigh_modify delay 0
 
