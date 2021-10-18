@@ -3,7 +3,7 @@ echo both
 atom_style full
 units lj
 
-#dimension 2
+
 boundary p p p
 read_data data.octahedron.init
 #read_data data.square.init
