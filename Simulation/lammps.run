@@ -1,0 +1,83 @@
+log log.octahedra.run
+echo both
+atom_style full
+units lj
+
+#dimension 2
+boundary p p p
+read_data data.octahedron_nanoparticle.init    # extra/bond/per/atom 5
+#read_data data_expanded.init extra/bond/per/atom 5
+neighbor 2 bin
+neigh_modify delay 0
+
+thermo_style custom step temp ke pe ebond bonds
+
+dump id1 all custom 5000 dump.octahedra_nanoparticle_1.000.lammpstrj id mol type q x y z
+
+
+replicate 8 8 8
+
+pair_style hybrid lj/cut 1.12246204831 soft 1 ##cutoff at 0 slope point
+pair_modify shift yes
+pair_coeff * * soft 0 1
+pair_coeff 1 1 lj/cut 1 0.625 0.70153878018 #0.84184653622 # 0.56123102415  # Strong, wide core WCA repulsion
+
+
+# 1:1 ratio (modify these numbers below to change size ratio)
+pair_coeff 1 3 lj/cut 1  0.625 0.7015387801933581
+pair_coeff 3 3 lj/cut 1  0.625 0.7015387801933581
+
+
+pair_coeff 2 3 soft -1  0.3125            # Vertex - nanoparticle attraction  
+
+group octahedra type != 3
+group nanoparticles type > 2
+
+fix 1 octahedra rigid/nve molecule
+fix 2 nanoparticles nve
+fix 3 all langevin 0.5 0.05 1 9680714
+
+#Set timestep
+
+timestep 0.0005
+thermo 1000
+
+# Annealing
+
+run 100000
+
+fix 3 all langevin 0.1 0.01 1 2334
+
+run 100000
+
+fix 3 all langevin 0.1 0.01 1 2354235
+
+run 100000
+
+fix 3 all langevin 0.1 0.01 1 2354235
+
+run 100000
+
+fix 3 all langevin 0.075 0.01 1 2354235
+
+run 100000
+
+fix 3 all langevin 0.075 0.01 1 2354235
+
+run 100000
+
+fix 3 all langevin 0.05 0.01 1 2354235
+
+run 100000
+
+fix 3 all langevin 0.05 0.01 1 2354235
+
+run 100000
+
+fix 3 all langevin 0.05 0.01 1 2354235
+
+run 100000
+
+write_data data.out
+
+
