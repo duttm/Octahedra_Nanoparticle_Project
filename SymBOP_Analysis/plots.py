@@ -268,8 +268,10 @@ def plots():
 			plt.rc('font', family='serif')
 
 			# paper notation
-			ax.set_xlabel(r"$(s_{\alpha}^{"+str(l)+r"m} | s_{\beta}^{"+str(l)+r"m})$", fontsize=34)#53)
-			ax.set_ylabel(r"$(s_{\alpha}^{"+str(l)+r"m} | q_{\alpha \beta}^{"+str(l)+r"m})$", fontsize=34)#53)
+			#ax.set_xlabel(r"$(s_{\alpha}^{"+str(l)+r"m} | s_{\beta}^{"+str(l)+r"m})$", fontsize=34)#53)
+			#ax.set_ylabel(r"$(s_{\alpha}^{"+str(l)+r"m} | q_{\alpha \beta}^{"+str(l)+r"m})$", fontsize=34)#53)
+			ax.set_xlabel(r"$(s_{i} | s_{j})_"+str(l)+"$", fontsize=34)#53)
+			ax.set_ylabel(r"$(s_{i} | b_{ij})_"+str(l)+"$", fontsize=34)#53)
 
 			ax.tick_params(axis='x', labelsize=30)#45)
 			ax.tick_params(axis='y', labelsize=30)#45)
