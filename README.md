@@ -12,6 +12,7 @@ LD Simulations:
 
 
 SymBOP Analysis:
+
     This code is used to analyze the LD simulations discussed above. In particular, we want to locate regions of orientationally ordered domains in the final state of the simulations. The domains, in general, will possess bond-orientational order and polyhedral nematic order. The anisotropic nature of the building blocks used in the LD simulations (octahedral and square patchy particles) allows us to use a more sensitive characterization technique than the traditional bond-order parameters (BOPs). Our technique symmetrizes the BOPs (SymBOPs) and uses the underlying symmetry to characterize the local neighborhoods of each particle. In addition, the polyhedral nematic order parameter is used to quantify the relative orientations of the anisotropic particles themselves. Together, these order parameters allow us to pick out domains that contain specific bonding and orientational order. This particular code can only be used with anisotropic particles (currently only ideal octahedra and squares).
 
 
