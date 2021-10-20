@@ -17,6 +17,6 @@ SymBOP Analysis:
 
 
 For more information see: 
--
--
+- J. A. Logan,  S. Mushnoori,  M. Dutt, and A. V. Tkachenko, “Symmetry-specific orientational order parameters for complex structures,” (2021), arXiv:TBA [cond-mat.soft]
+- S. Mushnoori, J. A. Logan, A. V. Tkachenko, and M. Dutt, “Controlling morphology in hybrid isotropic/patchy particle system,” (2021), arXiv:TBA [cond-mat.soft]
 - The README documents in the corresponding folders.
