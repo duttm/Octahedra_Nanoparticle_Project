@@ -10,9 +10,9 @@ authors:
   family-names: "Logan"
   given-names: "Jack"
   orcid: "https://orcid.org/0000-0003-3331-0112"
-  family-names: "YOUR_NAME_HERE"
-  given-names: "YOUR_NAME_HERE"
-  orcid: "https://orcid.org/0000-0000-0000-0000"
+  family-names: "Tkachenko"
+  given-names: "Alexei"
+  orcid: "https://orcid.org/0000-0003-1291-243X"
 title: "Octahedra_Nanoparticle_Project"
 version: 1.0.0
 doi: 10.5281/zenodo.1234
