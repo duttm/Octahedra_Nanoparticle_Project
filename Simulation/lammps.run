@@ -20,7 +20,7 @@ replicate 8 8 8
 
 pair_style hybrid lj/cut 1.12246204831 soft 1 ##cutoff at 0 slope point
 pair_modify shift yes
-pair_coeff * * soft 0 1
+pair_coeff * * soft 1 1
 
 
 group octahedra type != 3
