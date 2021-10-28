@@ -19,5 +19,5 @@ The included scripts are run input files for the LAMMPS simulation engine that p
 
 **For more information see:** 
 - J. A. Logan,  S. Mushnoori,  M. Dutt, and A. V. Tkachenko, “Symmetry-specific orientational order parameters for complex structures,” (2021), arXiv:2110.13862 [cond-mat.soft]
-- S. Mushnoori, J. A. Logan, A. V. Tkachenko, and M. Dutt, “Controlling morphology in hybrid isotropic/patchy particle system,” (2021), arXiv:2110.14627 [cond-mat.soft]
+- S. Mushnoori, J. A. Logan, A. V. Tkachenko, and M. Dutt, “Controlling morphology in hybrid isotropic/patchy particle assemblies,” (2021), arXiv:2110.14627 [cond-mat.soft]
 - The README documents in the corresponding folders.
